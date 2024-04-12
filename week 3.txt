@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include <unistd.h>
+
+#define PACKET_SIZE 100
+#define TIMEOUT 3
+int main() {
+    // Example usage of sender function
+    int packets[] = {1, 2, 3, 4, 5, 6}; // Example packets to send
+    int numPackets = sizeof(packets) / sizeof(packets[0]); // Calculate number of packets
+    float lossProbability = 0.2; // Example loss probability (20%)
+
+    sender(packets, numPackets, lossProbability); // Call sender function
+
+    return 0;
+}
+
+// Function to simulate transmission delay
+void simulateDelay() {
+    sleep(1); // Simulate 1-second delay
+}
+
+// Function to simulate packet loss
+bool simulatePacketLoss(float lossProbability) {
+    float randNum = ((float)rand() / (float)RAND_MAX);
+    return randNum < lossProbability;
+}
+
+// Sender function
+void sender(int packets[], int numPackets, float lossProbability) {
+    int nextPacketToSend = 0;
+    
+    while (nextPacketToSend < numPackets) {
+        if (!simulatePacketLoss(lossProbability)) {
+            printf("Sender: Sending packet %d\n", packets[nextPacketToSend]);
+            simulateDelay();
+            
+            // Simulate packet loss
+            if (simulatePacketLoss(lossProbability)) {
+                printf("Sender: Packet %d lost, waiting for ACK...\n", packets[nextPacketToSend]);
+            } else {
+                printf("Sender: Packet %d successfully sent\n", packets[nextPacketToSend]);
+                
+                // Simulate receiver's acknowledgment
+                if (!simulatePacketLoss(lossProbability)) {
+                    printf("Sender: Waiting for ACK for packet %d\n", packets[nextPacketToSend]);
+                    simulateDelay();
+                    
+                    // Simulate acknowledgment loss
+                    if (simulatePacketLoss(lossProbability)) {
+                        printf("Sender: ACK for packet %d lost, resending packet...\n", packets[nextPacketToSend]);
+                    } else {
+                        printf("Sender: ACK for packet %d received\n", packets[nextPacketToSend]);
+                        nextPacketToSend++;
+                    }
+                }
+            }
+        }
+    }
+}

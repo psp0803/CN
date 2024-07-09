@@ -1,86 +1,49 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <time.h>
-
-// Function to simulate transmission delay
-void simulateTransmissionDelay() {
-    // Generate random delay between 1 to 3 seconds
-    int delay = (rand() % 3) + 1;
-    sleep(delay);
-}
-
-// Sender function
-void sender(int framesToSend) {
-    int frame = 0;
-    srand(time(0)); // Initialize random seed based on current time
-
-    while (frame < framesToSend) {
-        // Simulate transmission delay
-        simulateTransmissionDelay();
-
-        printf("\nSending Frame %d ...", frame);
-
-        // Simulate acknowledgment reception delay
-        simulateTransmissionDelay();
-
-        // Simulate acknowledgment lost scenario (50% chance)
-        if (rand() % 2 == 0) {
-            printf("\nAcknowledgment for Frame %d not received (Timeout). Resending...", frame);
-            continue; // Resend the same frame
+#include <unistd.h>
+bool simulateError(float errorProb) {
+    float randNum = (float)rand() / RAND_MAX;
+    return randNum < errorProb; }
+void sender(int framesToSend, float errorProb) {
+    int frameNumber = 1;
+    while (frameNumber <= framesToSend) {
+        printf("Sender: Sending frame %d\n", frameNumber);
+        usleep(200000);
+        if (simulateError(errorProb)) {
+            printf("Sender: Frame %d lost\n", frameNumber);
+            printf("Sender: Retransmitting frame %d\n", frameNumber);
+        } else {
+            printf("Sender: Waiting for ACK for frame %d\n", frameNumber);
+            usleep(200000); 
+            printf("Sender: ACK received for frame %d\n", frameNumber);
+            frameNumber++;
         }
+    }
+}
+void receiver(int framesToReceive, float errorProb) {
+    int frameNumber = 1;
 
-        printf("\nAcknowledgment received for Frame %d.", frame);
-        frame++; // Move to the next frame
+    while (frameNumber <= framesToReceive) {
+        if (simulateError(errorProb)) {
+            printf("Receiver: Frame %d received with error\n", frameNumber);
+            printf("Receiver: Sending NAK for frame %d\n", frameNumber);
+        } else {
+            printf("Receiver: Frame %d received successfully\n", frameNumber);
+            usleep(200000);
+            printf("Receiver: ACK sent for frame %d\n", frameNumber);
+            frameNumber++;
+        }
+        usleep(200000);
     }
 }
 
-// Receiver function
-void receiver(int framesToReceive) {
-    int expectedFrame = 0;
-    srand(time(0)); // Initialize random seed based on current time
-
-    while (expectedFrame < framesToReceive) {
-        // Simulate transmission delay
-        simulateTransmissionDelay();
-
-        printf("\nWaiting for Frame %d ...", expectedFrame);
-
-        // Simulate data reception delay
-        simulateTransmissionDelay();
-
-        // Simulate frame lost scenario (50% chance)
-        if (rand() % 2 == 0) {
-            printf("\nFrame %d not received (Timeout). Requesting retransmission...", expectedFrame);
-            continue; // Request retransmission of the same frame
-        }
-
-        printf("\nFrame %d received successfully.", expectedFrame);
-
-        // Simulate acknowledgment transmission delay
-        simulateTransmissionDelay();
-
-        printf("\nSending Acknowledgment for Frame %d ...", expectedFrame);
-
-        expectedFrame++; // Move to the next expected frame
-    }
-}
-
-// Main function
 int main() {
-    int framesToSend, framesToReceive;
-
-    printf("Enter the number of frames to send/receive: ");
-    scanf("%d", &framesToSend);
-    framesToReceive = framesToSend;
-
-    printf("\n\nSender side:\n");
-    sender(framesToSend);
-
-    printf("\n\nReceiver side:\n");
-    receiver(framesToReceive);
-
-    printf("\n\nCommunication completed successfully.\n");
-
+    int frames = 5;
+    float errorProbability = 0.3;
+    srand(time(NULL));
+    sender(frames, errorProbability);
+    receiver(frames, errorProbability);
     return 0;
 }

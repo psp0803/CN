@@ -1,49 +1,30 @@
 #include <stdio.h>
-#include <stdbool.h>
-#include <stdlib.h>
-#include <time.h>
 #include <unistd.h>
-bool simulateError(float errorProb) {
-    float randNum = (float)rand() / RAND_MAX;
-    return randNum < errorProb; }
-void sender(int framesToSend, float errorProb) {
-    int frameNumber = 1;
-    while (frameNumber <= framesToSend) {
-        printf("Sender: Sending frame %d\n", frameNumber);
-        usleep(200000);
-        if (simulateError(errorProb)) {
-            printf("Sender: Frame %d lost\n", frameNumber);
-            printf("Sender: Retransmitting frame %d\n", frameNumber);
-        } else {
-            printf("Sender: Waiting for ACK for frame %d\n", frameNumber);
-            usleep(200000); 
-            printf("Sender: ACK received for frame %d\n", frameNumber);
-            frameNumber++;
-        }
+
+void sender(int framesToSend) {
+    for (int i = 1; i <= framesToSend; i++) {
+        printf("Sender: Sending frame %d\n", i);
+        usleep(200000); // Simulate transmission time
+        printf("Sender: Waiting for ACK for frame %d\n", i);
+        usleep(200000); // Simulate ACK transmission time
+        printf("Sender: ACK received for frame %d\n", i);
     }
 }
-void receiver(int framesToReceive, float errorProb) {
-    int frameNumber = 1;
 
-    while (frameNumber <= framesToReceive) {
-        if (simulateError(errorProb)) {
-            printf("Receiver: Frame %d received with error\n", frameNumber);
-            printf("Receiver: Sending NAK for frame %d\n", frameNumber);
-        } else {
-            printf("Receiver: Frame %d received successfully\n", frameNumber);
-            usleep(200000);
-            printf("Receiver: ACK sent for frame %d\n", frameNumber);
-            frameNumber++;
-        }
-        usleep(200000);
+void receiver(int framesToReceive) {
+    for (int i = 1; i <= framesToReceive; i++) {
+        printf("Receiver: Frame %d received successfully\n", i);
+        usleep(200000); // Simulate ACK transmission time
+        printf("Receiver: ACK sent for frame %d\n", i);
     }
 }
 
 int main() {
-    int frames = 5;
-    float errorProbability = 0.3;
-    srand(time(NULL));
-    sender(frames, errorProbability);
-    receiver(frames, errorProbability);
+    int frames = 5; // Number of frames to send/receive
+
+    // Start sender and receiver
+    sender(frames);
+    receiver(frames);
+
     return 0;
 }

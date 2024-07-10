@@ -1,0 +1,65 @@
+#include <stdio.h>
+
+void print_pages(int frames[], int n) {
+    for (int i = 0; i < n; i++) {
+        if (frames[i] != -1) {
+            printf("%d ", frames[i]);
+        } else {
+            printf("- ");
+        }
+    }
+    printf("\n");
+}
+
+int main() {
+    int n, frames_count, page_faults = 0;
+    int pages[100], frames[10], index = 0;
+
+    printf("Enter number of pages: ");
+    scanf("%d", &n);
+
+    printf("Enter the page reference string: ");
+    for (int i = 0; i < n; i++) {
+        scanf("%d", &pages[i]);
+    }
+
+    printf("Enter number of frames: ");
+    scanf("%d", &frames_count);
+
+    // Initialize frames with -1 indicating they are empty
+    for (int i = 0; i < frames_count; i++) {
+        frames[i] = -1;
+    }
+
+    printf("\nPage reference string processing:\n");
+    for (int i = 0; i < n; i++) {
+        int page = pages[i];
+        int found = 0;
+
+        // Check if page is already in any frame
+        for (int j = 0; j < frames_count; j++) {
+            if (frames[j] == page) {
+                found = 1;
+                break;
+            }
+        }
+
+        // If page is not found in any frame, replace the oldest one
+        if (!found) {
+            frames[index] = page;
+            index = (index + 1) % frames_count;
+            page_faults++;
+
+            // Print current state of frames after page replacement
+            printf("Page %d added: ", page);
+            print_pages(frames, frames_count);
+        } else {
+            // Print current state of frames if no replacement
+            printf("Page %d already in frames: ", page);
+            print_pages(frames, frames_count);
+        }
+    }
+
+    printf("\nTotal page faults: %d\n", page_faults);
+    return 0;
+}
